@@ -1,0 +1,181 @@
+#!groovy
+@Library('jenkins-shared-library')_
+
+pipeline {
+    agent {
+        label "qna-app-01-uat"
+    }
+
+    options {
+        copyArtifactPermission('*')
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '15', artifactNumToKeepStr: '15'))
+        skipDefaultCheckout()
+        timestamps ()
+    }
+
+    stages {
+        stage("Preparing environment") {
+            steps {
+                script {
+                    env.ATTEMPTS_CLIENT = '5'
+                    env.SLEEP_TIME = '10'
+                    env.DEPLOY_FOLDER = '/opt/ProceseVerbale'
+                }
+            }
+        }
+        stage("Bring artefacts to UAT") {
+            steps {
+                sh('#!/bin/sh -e\n' + '''
+                    echo -n "Deleting previous code... "
+                    rm -rf "${WORKSPACE}/*"
+                    echo "Done!"
+                ''')
+                bringArtifacts(
+                    buildName : "1. Build and Deploy - CI",
+                    promotedLevel : "2"
+                )
+            }
+        }
+        stage("Update config files") {
+            steps {
+                updateConfig(
+                    configId : "740722e1-99b2-4609-9218-eb6b23ebc67b",
+                    targetFile : "docker-compose.yml",
+                    artifactPath : "."
+                )
+                updateConfig(
+                    configId : "38349313-dd61-4562-9562-9a2d4389d987",
+                    targetFile : "site.conf",
+                    artifactPath : "docker/dependencies/nginx"
+                )
+            }
+        }
+        stage("Deploy on UAT") {
+            steps {
+                withCredentials([usernamePassword(credentialsId: '4f1c8aad-4f3c-450e-8526-18a1557818d7', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                    sh('#!/bin/sh -e\n' + '''
+                        echo -n "Copy project from workspace to '${DEPLOY_FOLDER}' ... "
+                        rsync -aq --delete-before "${WORKSPACE}/" "${DEPLOY_FOLDER}/"
+                        echo "Done!"
+
+                        cd "${DEPLOY_FOLDER}"
+
+                        echo -n "Stopping docker container... "
+                        docker-compose down 2> /dev/null &
+                        wait $!
+                        echo "Done!"
+                        sleep 5
+
+                        echo -n "Removing unused volumes... "
+                        VOLUMES_TO_REMOVE=$(docker volume ls -qf dangling=true)
+                        if [[ -z ${VOLUMES_TO_REMOVE} ]]
+                        then 
+                            echo -n "No volumes to be removed... "
+                        else
+                            docker volume rm $(docker volume ls -qf dangling=true) 1> /dev/null 2> /dev/null &
+                            wait $!
+                        fi
+                        echo "Done!"
+
+                        # echo -n "Creating Entity folder... "
+                        # mkdir -p api/src/Entity
+                        # echo "Done!"
+
+                        echo -n "Updating .env file... "
+                        chmod 775 api/.env
+                        echo "Done!"
+
+                        echo -n "Starting docker container... "
+                        docker-compose up -d
+                        echo "Done!"
+
+                        echo "Giving time to start the containers!"
+                        sleep 5
+                        
+                        echo "Checking if container is up... "
+                        for ATTEMPT in $(seq "${ATTEMPTS_CLIENT}"); do
+                            echo "Attempt "${ATTEMPT}" of ${ATTEMPTS_CLIENT}"
+                            STATUS_HEALTH_PHP=$(docker ps -a --format "table {{.Status}}" --filter name=pv_php | awk 'NR>1 {print $1}')
+                            STATUS_HEALTH_WEB=$(docker ps -a --format "table {{.Status}}" --filter name=pv_web | awk 'NR>1 {print $1}')
+                            STATUS_HEALTH_EXPRESS=$(docker ps -a --format "table {{.Status}}" --filter name=pv_express | awk 'NR>1 {print $1}')
+
+                            # Checking PHP
+                            if [[ "${STATUS_HEALTH_PHP}" == "Up" ]]; then
+                                echo "'PHP' container has come up and ready to use after ${ATTEMPT} of "${ATTEMPTS_CLIENT}" attempts!"
+                                docker exec pv_php php api/bin/console cache:clear
+                                #echo -n "Generating API interface... "
+                                #docker exec pv_php php api/vendor/bin/openapi --format json --output api/public/swagger/swaggerJson/swagger.json api/public/swagger/swaggerJson/swagger.php api/src
+                                #echo "Done!"
+                                exit 0
+                            else
+                                echo "The container is not ready yet... ${STATUS_HEALTH}"
+                                if [[ "${STATUS_HEALTH}" == "Created" ]]; then
+                                    echo "Attempting to start the container..."
+                                    docker-compose start pv_php
+                                fi
+                            fi
+
+                            # Checking Web
+                            if [[ "${STATUS_HEALTH_WEB}" == "Up" ]]; then
+                                echo "'Web' container has come up and ready to use after ${ATTEMPT} of "${ATTEMPTS_CLIENT}" attempts!"
+                                echo "Done!"
+                                exit 0
+                            else
+                                echo "'Web' container is not ready yet... ${STATUS_HEALTH_WEB}"
+                                if [[ "${STATUS_HEALTH_WEB}" == "Created" ]]; then
+                                    echo "Attempting to start the container..."
+                                    docker-compose start pv_php
+                                fi
+                            fi
+
+                            # Checking Express
+                            if [[ "${STATUS_HEALTH_EXPRESS}" == "Up" ]]; then
+                                echo "'Express' container has come up and ready to use after ${ATTEMPT} of "${ATTEMPTS_CLIENT}" attempts!"
+                                echo "Done!"
+                                exit 0
+                            else
+                                echo "'Express' container is not ready yet... ${STATUS_HEALTH_EXPRESS}"
+                                if [[ "${STATUS_HEALTH_EXPRESS}" == "Created" ]]; then
+                                    echo "Attempting to start the container..."
+                                    docker-compose start pv_express
+                                fi
+                            fi
+
+                            sleep "${SLEEP_TIME}"
+                        done                            
+                        
+                        echo "There was an error during containers start-up!!!!"
+                        exit 1
+                    ''')
+                }
+            }
+        }
+        stage("Archive artifact") {
+            steps {
+                archArtifacts()
+            }
+        }
+    }
+    post {
+        cleanup {
+            cleanWs deleteDirs: true, notFailBuild: true
+            sh('#!/bin/sh -e\n' + '''
+                cd "${DEPLOY_FOLDER}"
+
+                echo -n "Removing unused volumes... "
+                VOLUMES_TO_REMOVE=$(docker volume ls -qf dangling=true)
+
+                if [[ -z ${VOLUMES_TO_REMOVE} ]]
+                then 
+                    echo -n "No volumes to be removed... "
+                else
+                    docker volume rm $(docker volume ls -qf dangling=true) 1> /dev/null 2> /dev/null &
+                    wait $!
+                fi
+                
+                echo "Done!"
+            ''')
+        }
+    }
+}
