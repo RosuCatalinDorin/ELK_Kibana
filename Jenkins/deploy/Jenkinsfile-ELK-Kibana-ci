@@ -4,6 +4,7 @@
           stage("build") {
             steps {
               echo 'bulding the application'
+              echo pwd
             }
           }
            stage("test") {
