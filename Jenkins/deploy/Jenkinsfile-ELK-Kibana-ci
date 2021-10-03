@@ -9,7 +9,8 @@
               echo 'bulding the application'
                      sh '''
                       pwd
-                     echo "hello world"
+                      echo "hello world"
+                      docker-compose -up -d
                   '''
             }
           }
