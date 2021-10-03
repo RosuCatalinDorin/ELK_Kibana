@@ -5,7 +5,7 @@
             steps {
               echo 'bulding the application'
                      sh '''
-                     echo pwd
+                      pwd
                      echo "hello world"
                   '''
             }
