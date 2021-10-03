@@ -4,7 +4,10 @@
           stage("build") {
             steps {
               echo 'bulding the application'
-             mkdir jenkinsTest
+                     sh '''
+                     echo pwd
+                     echo "hello world"
+                  '''
             }
           }
            stage("test") {
