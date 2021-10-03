@@ -4,9 +4,9 @@
           stage("build") {
             steps {
               echo 'bulding the application'
-              sh("
+              sh(
                 git clone https://github.com/RosuCatalinDorin/ELK_Kibana.git
-              ")
+              )
             }
           }
            stage("test") {
