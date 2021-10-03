@@ -2,6 +2,9 @@
    agent any
       stages {
           stage("build") {
+          agent {
+                  label "master"
+            }
             steps {
               echo 'bulding the application'
                      sh '''
