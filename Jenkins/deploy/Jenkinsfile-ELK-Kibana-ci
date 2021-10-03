@@ -2,15 +2,11 @@
    agent any
       stages {
           stage("build") {
-          agent {
-                  label "master"
-            }
             steps {
               echo 'bulding the application'
                      sh '''
                       pwd
                       echo "hello world"
-                      docker-compose -up -d
                   '''
             }
           }
