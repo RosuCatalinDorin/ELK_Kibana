@@ -4,9 +4,7 @@
           stage("build") {
             steps {
               echo 'bulding the application'
-              sh(
-                mkdir cataTest
-              )
+             mkdir jenkinsTest
             }
           }
            stage("test") {
