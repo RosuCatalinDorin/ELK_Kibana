@@ -9,15 +9,16 @@
                       echo "hello world"
                   '''
             }
+             stage("deploy") {
+                        steps {
+                          echo 'deploying the aplication'
+                        }
            stage("test") {
             steps {
               echo 'testing the application'
             }
           }
-              stage("deploy") {
-            steps {
-              echo 'deploying the aplication'
-            }
+
           }
           }
      }
