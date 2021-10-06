@@ -10,26 +10,5 @@
                   '''
             }
           }
-           stage("test") {
-            steps {
-              echo 'testing the application'
-            }
-          }
-              stage("deploy") {
-            steps {
-              echo 'deploying the aplication'
-            }
-          }
      }
-  }
-  node {
-    stage('Build') {
-    echo 'Building....'
-    }
-    stage('Test') {
-    echo 'Building....'
-    }
-    stage('Deploy') {
-    echo 'Deploying....'
-    }
   }
