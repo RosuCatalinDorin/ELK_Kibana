@@ -6,6 +6,7 @@
               echo 'bulding the application'
                      sh '''
                       pwd
+                      ls
                       echo "hello world"
                   '''
             } }
