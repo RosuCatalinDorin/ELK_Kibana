@@ -8,7 +8,7 @@
                       pwd
                       ls
                       echo "hello world"
-                      docker-compose up -d
+
                   '''
             }
             }
