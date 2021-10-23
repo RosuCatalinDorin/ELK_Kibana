@@ -8,13 +8,13 @@
                       pwd
                       ls
                       echo "hello world"
-                      cd ..
+
                       echo "copping file"
                       pwd
-                      cp -r  ELK_Kibana /var/www/
+                      cp -r  * /var/www/ELK_Kibana
                       cd /var/www/
                       pwd
-                      sudo docker-compose up -d
+
                   '''
             }
             }
