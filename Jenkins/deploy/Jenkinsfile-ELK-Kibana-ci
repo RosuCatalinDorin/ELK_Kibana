@@ -10,6 +10,7 @@
                       echo "hello world"
                       cd ..
                       echo "copping file"
+                      pwd
                       cp -r  ELK_Kibana /var/www/
                       cd /var/www/
                       pwd
