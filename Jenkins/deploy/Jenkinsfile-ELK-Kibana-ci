@@ -11,7 +11,7 @@
 
                       echo "copping file"
                       pwd
-                      cp -r  * /var/www/ELK_Kibana
+                      sudo cp -r  * /var/www/ELK_Kibana
                       cd /var/www/
                       pwd
 
