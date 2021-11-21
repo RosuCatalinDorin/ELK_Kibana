@@ -1,6 +1,13 @@
   pipeline {
    agent any
       stages {
+         steps {
+            git branch: 'master',
+                credentialsId: 'GitHubCataRosu',
+                url: 'https://github.com/RosuCatalinDorin/ELK_Kibana.git'
+
+            sh "ls -lat"
+        }
           stage("build") {
             steps {
               echo 'bulding the application'
