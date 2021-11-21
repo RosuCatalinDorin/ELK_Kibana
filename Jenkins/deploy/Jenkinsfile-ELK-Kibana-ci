@@ -3,14 +3,18 @@ pipeline {
       stages {
           stage("build") {
             steps {
-            
+                 echo 'Git Checkout '
             git branch: 'master',
                 credentialsId: 'GitHubCataRosu',
                 url: 'https://github.com/RosuCatalinDorin/ELK_Kibana.git'
-
-            sh "ls -lat"
-            echo 'Git Checkout done '
-                     sh '''
+   
+                }
+              echo 'Git Checkout done '
+            }
+            stage("deploy") {
+              steps {
+                 echo 'Git Checkout done '
+                   sh '''
                       pwd
                       ls
                       echo "hello world"
@@ -21,12 +25,7 @@ pipeline {
                       echo "done"
                       cd /var/www/ELK_Kibana
                       
-                  '''   
-            }
-            }
-            stage("deploy") {
-              steps {
-                echo 'deploying the aplication'
+                    '''   
                        }
             }
                stage("test") {
