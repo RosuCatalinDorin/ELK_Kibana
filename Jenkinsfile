@@ -7,6 +7,7 @@
                 url: 'https://github.com/RosuCatalinDorin/ELK_Kibana.git'
 
             sh "ls -lat"
+            sh "rsync --delete-before /lib/jenkins/workspace/ELK_Kibana /opt/"
         }
           stage("build") {
             steps {
