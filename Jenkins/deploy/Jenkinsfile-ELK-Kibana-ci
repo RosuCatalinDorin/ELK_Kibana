@@ -29,7 +29,7 @@ pipeline {
               steps {
                    sh 'cd /var/www/ELK_Kibana'
                    sh 'pwd'
-                   sh 'docker-compose up'
+                   sh 'sudo docker-compose up'
                        }
             }
                stage("test") {
