@@ -1,20 +1,14 @@
 pipeline {
    agent any
       stages {
-          stage("build") {
-            steps {
-                 echo 'Git Checkout '
+          stage("Git Checkout"){
             git branch: 'master',
                 credentialsId: 'GitHubCataRosu',
                 url: 'https://github.com/RosuCatalinDorin/ELK_Kibana.git'
-   
-                }
-              echo 'Git Checkout done '
-            }
-          stage("deploy") {
-              steps {
-                 echo 'Git Checkout done '
-                   sh '''
+          }
+          stage("Copy File to /var/www/ELK_Kibana") {
+            steps {
+                     sh '''
                       pwd
                       ls
                       echo "hello world"
@@ -25,13 +19,20 @@ pipeline {
                       echo "done"
                       cd /var/www/ELK_Kibana
                       
-                    '''   
+                  '''   
+            }
+            }
+            stage("deploy") {
+              steps {
+                echo 'deploying the aplication'
                        }
-           }
-             stage("test") {
+            }
+               stage("test") {
                 steps {
                   echo 'testing the application'
                  }
+             }
+
           }
    }
 
