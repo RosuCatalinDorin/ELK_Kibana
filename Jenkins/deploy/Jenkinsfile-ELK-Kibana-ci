@@ -1,22 +1,27 @@
-  pipeline {
+pipeline {
    agent any
       stages {
           stage("build") {
             steps {
-              echo 'bulding the application'
+            
+            git branch: 'master',
+                credentialsId: 'GitHubCataRosu',
+                url: 'https://github.com/RosuCatalinDorin/ELK_Kibana.git'
+
+            sh "ls -lat"
+            echo 'Git Checkout done '
                      sh '''
                       pwd
                       ls
                       echo "hello world"
 
-                      echo "copping file"
+                      echo "var/www/ELK_Kibana"
                       pwd
                       sudo cp -r  * /var/www/ELK_Kibana
-                      cd /var/www/
-                      pwd
-
-
-                  '''
+                      echo "done"
+                      cd /var/www/ELK_Kibana
+                      
+                  '''   
             }
             }
             stage("deploy") {
