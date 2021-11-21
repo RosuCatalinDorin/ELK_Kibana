@@ -11,7 +11,7 @@ pipeline {
                 }
               echo 'Git Checkout done '
             }
-            stage("deploy") {
+          stage("deploy") {
               steps {
                  echo 'Git Checkout done '
                    sh '''
@@ -27,13 +27,11 @@ pipeline {
                       
                     '''   
                        }
-            }
-               stage("test") {
+           }
+             stage("test") {
                 steps {
                   echo 'testing the application'
                  }
-             }
-
           }
    }
 
