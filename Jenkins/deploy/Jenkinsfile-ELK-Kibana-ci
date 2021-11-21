@@ -11,7 +11,7 @@ pipeline {
           }
           stage("Copy File to /var/www/ELK_Kibana") {
             steps {
-                     sh '''
+                   sh '''
                       pwd
                       ls
                       echo "hello world"
@@ -25,10 +25,11 @@ pipeline {
                   '''   
             }
             }
-            stage("deploy") {
+            stage("start containers") {
               steps {
                    sh 'cd /var/www/ELK_Kibana'
                    sh 'pwd'
+                   sh 'docker-compose up -d'
                        }
             }
                stage("test") {
