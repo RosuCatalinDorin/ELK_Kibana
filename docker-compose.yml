@@ -68,11 +68,6 @@ services:
       - docker_net
     depends_on:
       - elasticsearch
-
-networks:
-  elk:
-    driver: bridge
-
 volumes:
   elasticsearch:
 networks:
