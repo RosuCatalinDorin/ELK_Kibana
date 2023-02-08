@@ -23,6 +23,7 @@ services:
       # Use single node discovery in order to disable production mode and avoid bootstrap checks.
       # see: https://www.elastic.co/guide/en/elasticsearch/reference/current/bootstrap-checks.html
       discovery.type: single-node
+    restart: always
     networks:
       - docker_net
 
@@ -45,6 +46,7 @@ services:
       - "5000/tcp"
       - "5000/udp"
       - "9600"
+    restart: always
     environment:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
     networks:
@@ -68,6 +70,7 @@ services:
       - docker_net
     depends_on:
       - elasticsearch
+    restart: always
 volumes:
   elasticsearch:
 networks:
